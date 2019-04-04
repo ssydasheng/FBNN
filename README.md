@@ -9,7 +9,7 @@ This project runs with Python 3.6. Before running the code, you have to install
 * [GPflow-Slim](https://github.com/ssydasheng/GPflow-Slim)
 
 ## Experiments
-![](figures/anime-sin-per.gif) ![](figures/anime-sin-rbf.gif)
+![Periodic Prior](figures/anime-sin-per.gif){:height="50%" width="50%"} ![RBF Prior](figures/anime-sin-rbf.gif){:height="50%" width="50%"}
 
 Below we shows some examples to run the experiments.
 ### x3 regression
