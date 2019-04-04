@@ -4,3 +4,5 @@
 .idea
 data/contextual_bandits/
 results
+figures/._anime-sin-per.gif
+figures/._anime-sin-rbf.gif
