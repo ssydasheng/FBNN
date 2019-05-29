@@ -10,8 +10,8 @@ import tensorflow as tf
 from absl import flags
 import zhusuan as zs
 
-from bandits.algorithms.multitask_gp import MultitaskGP
-from bandits.core.bayesian_nn import BayesianNN
+from core.bandits.algorithms.multitask_gp import MultitaskGP
+from core.bandits.core.bayesian_nn import BayesianNN
 from core.grad_estimator import SpectralScoreEstimator, entropy_surrogate
 
 FLAGS = flags.FLAGS

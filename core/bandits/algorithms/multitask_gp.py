@@ -24,7 +24,7 @@ from absl import logging
 
 import numpy as np
 import tensorflow as tf
-from bandits.core.bayesian_nn import BayesianNN
+from core.bandits.core.bayesian_nn import BayesianNN
 
 FLAGS = flags.FLAGS
 tfd = tf.contrib.distributions

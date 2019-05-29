@@ -27,7 +27,7 @@ import tensorflow as tf
 # import tensorflow_probability as tfp
 
 from absl import flags
-from bandits.core.bayesian_nn import BayesianNN
+from core.bandits.core.bayesian_nn import BayesianNN
 
 
 FLAGS = flags.FLAGS

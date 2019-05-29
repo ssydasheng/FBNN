@@ -21,14 +21,14 @@ from __future__ import print_function
 
 import numpy as np
 
-from bandits.core.bandit_algorithm import BanditAlgorithm
-from bandits.algorithms.bb_alpha_divergence_model import BBAlphaDivergence
-from bandits.algorithms.bf_variational_neural_bandit_model import BfVariationalNeuralBanditModel
-from bandits.core.contextual_dataset import ContextualDataset
-from bandits.algorithms.multitask_gp import MultitaskGP
-from bandits.algorithms.neural_bandit_model import NeuralBanditModel
-from bandits.algorithms.variational_neural_bandit_model import VariationalNeuralBanditModel
-from bandits.algorithms.fbnn import FunctionalBNNModel
+from core.bandits.core.bandit_algorithm import BanditAlgorithm
+from core.bandits.algorithms.bb_alpha_divergence_model import BBAlphaDivergence
+from core.bandits.algorithms.bf_variational_neural_bandit_model import BfVariationalNeuralBanditModel
+from core.bandits.core.contextual_dataset import ContextualDataset
+from core.bandits.algorithms.multitask_gp import MultitaskGP
+from core.bandits.algorithms.neural_bandit_model import NeuralBanditModel
+from core.bandits.algorithms.variational_neural_bandit_model import VariationalNeuralBanditModel
+from core.bandits.algorithms.fbnn import FunctionalBNNModel
 
 
 class PosteriorBNNSampling(BanditAlgorithm):

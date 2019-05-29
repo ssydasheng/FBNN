@@ -21,9 +21,9 @@ from __future__ import print_function
 
 import numpy as np
 
-from bandits.core.bandit_algorithm import BanditAlgorithm
-from bandits.core.contextual_dataset import ContextualDataset
-from bandits.algorithms.neural_bandit_model import NeuralBanditModel
+from core.bandits.core.bandit_algorithm import BanditAlgorithm
+from core.bandits.core.contextual_dataset import ContextualDataset
+from core.bandits.algorithms.neural_bandit_model import NeuralBanditModel
 
 
 class BootstrappedBNNSampling(BanditAlgorithm):

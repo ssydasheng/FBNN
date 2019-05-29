@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import numpy as np
 
-from bandits.core.bandit_algorithm import BanditAlgorithm
+from core.bandits.core.bandit_algorithm import BanditAlgorithm
 
 
 class FixedPolicySampling(BanditAlgorithm):
