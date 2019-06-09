@@ -30,6 +30,7 @@ class AbstractFVI(object):
         self.build_rand()
         self.build_function()
         self.build_log_likelihood()
+        self.build_evaluation()
 
     def init_inputs(self):
         self.x                = tf.placeholder(tf.float32, shape=[None, self.input_dim], name='x')
@@ -62,8 +63,14 @@ class AbstractFVI(object):
     def build_log_likelihood(self):
         y_obs = tf.tile(tf.expand_dims(self.y, axis=0), [self.n_particles, 1])
         y_x_dist = tf.distributions.Normal(self.func_x, tf.to_float(self.obs_var)**0.5)
-        self.log_likelihood = tf.reduce_mean(y_x_dist.log_prob(y_obs))
+        self.log_likelihood_sample = y_x_dist.log_prob(y_obs)
+        self.log_likelihood = tf.reduce_mean(self.log_likelihood_sample)
         self.y_x_pred = y_x_dist.sample()
+
+    def build_evaluation(self):
+        self.eval_rmse = tf.sqrt(tf.reduce_mean((tf.reduce_mean(self.func_x, 0) - self.y) ** 2))
+        self.eval_lld = tf.reduce_mean(tf.reduce_logsumexp(self.log_likelihood_sample, 0)
+                                       - tf.log(tf.to_float(self.n_particles)))
 
     @property
     def params_posterior(self):
@@ -88,9 +95,7 @@ class AbstractFVI(object):
         self.infer_latent = self.optimizer.minimize(-self.elbo, var_list=self.params_posterior) \
             if len(self.params_posterior) else tf.no_op()
 
-        flag = (not len(self.params_prior)) and any(tf.gradients(self.elbo, self.params_prior))
-        self.infer_prior = tf.no_op() if not flag else self.optimizer.minimize(-self.elbo)
-
+        self.infer_prior = tf.no_op()
         self.infer_likelihood = self.optimizer.minimize(-self.elbo, var_list=self.params_likelihood)\
             if len(self.params_likelihood) else tf.no_op()
 
