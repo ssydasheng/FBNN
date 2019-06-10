@@ -12,8 +12,7 @@ import copy
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 
-data_path = os.path.join(root_path, 'data')
-# data_path = '/ais/gobi5/ssy/data'
+data_path = os.path.join(root_path, 'data', 'uci')
 DATASETS = dict(
     boston='housing.data',
     concrete='concrete.data',

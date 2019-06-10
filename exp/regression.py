@@ -17,7 +17,7 @@ from utils.utils import median_distance_local
 
 
 parser = argparse.ArgumentParser('Regression')
-parser.add_argument('-d', '--dataset', type=str, default='boston')
+parser.add_argument('-d', '--dataset', type=str, default='yacht')
 parser.add_argument('-in', '--injected_noise', type=float, default=0.01)
 parser.add_argument('-r', '--rand', type=str, default='uniform')
 parser.add_argument('-na', '--n_rand', type=int, default=5)
@@ -32,7 +32,6 @@ parser.add_argument('--train_samples', type=int, default=100)
 parser.add_argument('--test_samples', type=int, default=100)
 parser.add_argument('--print_interval', type=int, default=100)
 parser.add_argument('--test_interval', type=int, default=100)
-parser.add_argument('--seed', type=int, default=1)
 
 args = parser.parse_args()
 logger = get_logger(args.dataset, 'results/regression/%s/'%args.dataset, __file__)
@@ -58,8 +57,9 @@ def run(seed):
         prior_kernel = gfs.kernels.RBF(input_dim=input_dim, name='rbf', lengthscales=ls, ARD=True)
 
     with tf.variable_scope('likelihood'):
-        obs_logstd = tf.get_variable('obs_logstd', shape=[], initializer=tf.constant_initializer(np.log(0.5)))
-        obs_var = tf.exp(2.*obs_logstd)
+        obs_log1p = tf.get_variable('obs_log1p', shape=[], 
+                                    initializer=tf.constant_initializer(np.log(np.exp(0.5) - 1.)))
+        obs_var = tf.nn.softplus(obs_log1p)**2.
 
     def rand_generator(*arg):
         if args.rand == 'uniform':
@@ -76,14 +76,12 @@ def run(seed):
     model.build_prior_gp(init_var=0.1)
     update_op = tf.group(model.infer_latent, model.infer_likelihood)
     with tf.control_dependencies([update_op]):
-        train_op = tf.assign(obs_logstd, tf.maximum(tf.maximum(
-            tf.to_float(model.gp_logstd), obs_logstd), tf.log(0.05)))
+        train_op = tf.assign(obs_log1p, tf.maximum(tf.maximum(
+            tf.to_float(tf.log(tf.exp(model.gp_var**0.5) - 1.)), obs_log1p), tf.log(tf.exp(0.05) - 1.)))
 
     ############################## training #######################################
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
-
-    from scipy import stats
 
     gp_epochs = 5000
     for epoch in range(gp_epochs):
@@ -92,15 +90,6 @@ def run(seed):
         if epoch % args.print_interval == 0:
             print('>>> Seed {:5d} >>> Pretrain GP Epoch {:5d}/{:5d}: Loss={:.5f} | Var={:.5f}'.format(
                 seed, epoch, gp_epochs, loss, gp_var))
-
-            func_, var_ = sess.run([model.func_x_pred_gp, model.gp_var], feed_dict={model.x_gp:train_x, model.y_gp:train_y, model.x_pred_gp: test_x, model.n_particles: args.test_samples})
-            mean_, var_ = np.mean(func_, 0), np.std(func_, 0)**2.+var_
-            rmse = np.mean((mean_ - test_y) ** 2) ** .5 * std_y_train
-            log_likelihood = np.mean(np.log(stats.norm.pdf(
-                test_y,
-                loc=mean_,
-                scale=var_ ** 0.5))) - np.log(std_y_train)
-            print('rmse = {}, logll = {}'.format(rmse, log_likelihood))
 
     epoch_iters = max(N // args.batch_size, 1)
     for epoch in range(1, args.epochs+1):
@@ -128,9 +117,9 @@ def run(seed):
                 return rmse, lld
 
 if __name__ == '__main__':
-    n_run = 1# 10 #TODO
+    n_run = 10
     rmse_results, lld_results = [], []
-    for seed in range(args.seed, n_run+args.seed):
+    for seed in range(1, n_run+1):
         rmse, ll = run(seed)
         rmse_results.append(rmse)
         lld_results.append(ll)
