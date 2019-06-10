@@ -26,6 +26,10 @@ python exp/toy.py -d sin -na 40 -nh 5 -nu 500 -e 50000 -il -2
 ```
 python exp/piecewise.py -d p_const
 ```
+### Regression
+```
+python exp/regression.py -d yacht
+```
 ### Contextual Bandits
 ```
 python exp/bandits.py --data_type statlog
