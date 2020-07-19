@@ -14,13 +14,15 @@ class AbstractFVI(object):
     :param input_dim. Int.
     :param n_rand. Int. Number of random measurement points.
     :param injected_noise: Float. Injected to function outputs for stability.
+    :param likelihood: None or Class. If None: Gaussian(obs_var).
     """
     def __init__(self, posterior, rand_generator, obs_var,
-                 input_dim, n_rand, injected_noise):
+                 input_dim, n_rand, injected_noise, likelihood=None):
 
         self.posterior = posterior
         self._rand_generator = rand_generator
         self.obs_var = obs_var
+        self._likelihood = likelihood
 
         self.input_dim = input_dim
         self.n_rand = n_rand
@@ -62,10 +64,13 @@ class AbstractFVI(object):
 
     def build_log_likelihood(self):
         y_obs = tf.tile(tf.expand_dims(self.y, axis=0), [self.n_particles, 1])
-        y_x_dist = tf.distributions.Normal(self.func_x, tf.to_float(self.obs_var)**0.5)
-        self.log_likelihood_sample = y_x_dist.log_prob(y_obs)
-        self.log_likelihood = tf.reduce_mean(self.log_likelihood_sample)
-        self.y_x_pred = y_x_dist.sample()
+        if self._likelihood is not None:
+            self.log_likelihood = tf.reduce_mean(self._likelihood.forward(self.func_x, y_obs))
+            self.log_likelihood_sample = self._likelihood.forward(self.func_x, y_obs)
+        else:
+            y_x_dist = tf.distributions.Normal(self.func_x, tf.to_float(self.obs_var)**0.5)
+            self.log_likelihood_sample = y_x_dist.log_prob(y_obs)
+            self.log_likelihood = tf.reduce_mean(self.log_likelihood_sample)
 
     def build_evaluation(self):
         self.eval_rmse = tf.sqrt(tf.reduce_mean((tf.reduce_mean(self.func_x, 0) - self.y) ** 2))
@@ -110,11 +115,11 @@ class EntropyEstimationFVI(AbstractFVI):
     Function Variational Inference with estimating entropy and computing cross entropy analytically.
     """
     def __init__(self, prior_kernel, posterior, rand_generator, obs_var,
-                 input_dim, n_rand, injected_noise,
+                 input_dim, n_rand, injected_noise, likelihood=None,
                  n_eigen_threshold=0.99, eta=0.):
         super(EntropyEstimationFVI, self).__init__(
             posterior, rand_generator, obs_var,
-            input_dim, n_rand, injected_noise)
+            input_dim, n_rand, injected_noise, likelihood=likelihood)
         self.n_eigen_threshold = n_eigen_threshold
         self.eta = eta
 
@@ -166,11 +171,11 @@ class KLEstimatorFVI(AbstractFVI):
     Function Variational Inference with estimating the whole KL divergence term.
     """
     def __init__(self, prior_generator, posterior, rand_generator, obs_var,
-                 input_dim, n_rand, injected_noise,
+                 input_dim, n_rand, injected_noise, likelihood=None,
                  n_eigen_threshold=0.99, eta=0.):
         super(KLEstimatorFVI, self).__init__(
             posterior, rand_generator, obs_var,
-            input_dim, n_rand, injected_noise)
+            input_dim, n_rand, injected_noise, likelihood=likelihood)
         self.prior_gen = prior_generator
         self.n_eigen_threshold = n_eigen_threshold
         self.eta = eta
